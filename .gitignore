@@ -1,1 +1,8 @@
 .DS_Store
+*.project
+*.buildpath
+*.sln
+.codeclimate.yml
+/.metadata
+/.settings
+/aspnet_client
