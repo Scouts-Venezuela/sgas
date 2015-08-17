@@ -49,7 +49,7 @@ define('PRODUCTION', FALSE);
 /**
  * Establece polí­tica de informe de errores
  */
-//error_reporting(E_ALL ^ E_STRICT);ini_set('display_errors', 'On');
+error_reporting(E_ALL ^ E_STRICT);ini_set('display_errors', 'On');
 
 /**
  * Define el APP_PATH
