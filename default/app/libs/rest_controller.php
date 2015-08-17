@@ -27,9 +27,9 @@ class RestController extends KumbiaRest {
         header('Access-Control-Allow-Credentials: true');
 
         // Habilitar todos los headers que recibe (Authorization sobre todo para manejar JWT)
-        $requestHeaders = apache_request_headers();
+        $requestHeaders = $this->requestHeaders();
         $request = array_keys($requestHeaders);
-        header("Access-Control-Allow-Headers: ".implode(',', $request).',authorization');
+        header("Access-Control-Allow-Headers: ".implode(',', $request).',Authorization');
 
         $publicView = [
             'test'
@@ -60,11 +60,12 @@ class RestController extends KumbiaRest {
 
     }
 
-    // Funcion para Atender a todos las solicitudes de seguridad
-    // que se hacen con el método options
-    //
-    // FIXME: con más tiempo hacer una solución contundente para este método
-    //
+    /**
+     *
+     * Funcion para Atender a todos las solicitudes de seguridad que se hacen con el método options
+     * FIXME: con más tiempo hacer una solución contundente para este método
+     *
+     */
     public function options() {
         $rest_method = array('GET', 'POST', 'PUT', 'DELETE');
         $class_method = get_class_methods($this);
@@ -83,9 +84,35 @@ class RestController extends KumbiaRest {
         die();
     }
 
-    //
-    // TODO: Implimentar un limit a la consultas de getAll() por seguridad
-    //
+
+    /**
+     *
+     * Método para el equiparar la apache_request_headers
+     *
+     * @return Array
+     *
+     */
+    final function requestHeaders() {
+        $begin = 'HTTP';
+        $headers = array();
+        $clean = array('HTTP_' => '', '_' => ' ');
+        foreach ($_SERVER as $key => $value) {
+            if (strrpos($key, $begin, -strlen($key)) !== FALSE) {
+                $key = strtolower(strtr($key, $clean));
+                $headers[str_replace(' ', '-', ucwords($key))] = $value;
+            }
+        }
+        return $headers;
+    }
+
+    /**
+     *
+     * Método para el manejo de la vistas públicas
+     * TODO: Implimentar un limit a la consultas de getAll() por seguridad
+     *
+     *  @param Array Lista de controladores públicos
+     *  @return Boolean
+     */
     final function control($publicView){
         $granted = False;
         if (!is_array($publicView)) { throw new KumbiaException("Parámetro inesperado, se esperaba un array"); }
