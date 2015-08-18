@@ -50,6 +50,9 @@ require_once CORE_PATH . 'kumbia/config.php';
 // Lee la configuracion
 $config = Config::read('config');
 
+define('TOKEN', $config['application']['token']);
+define('LIFETIME', $config['application']['lifetime']);
+
 // Carga la cache y verifica si esta cacheado el template, al estar en produccion
 if (PRODUCTION) {
 	// @see Cache
