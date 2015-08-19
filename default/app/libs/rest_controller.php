@@ -31,7 +31,7 @@ class RestController extends KumbiaRest {
         header('Access-Control-Allow-Credentials: true');
 
         // Habilitar todos los headers que recibe (Authorization sobre todo para manejar JWT)
-        $requestHeaders = $this->requestHeaders();
+        $requestHeaders = $this->getHeaders();
         $request = array_keys($requestHeaders);
         header("Access-Control-Allow-Headers: ".implode(',', $request).',Authorization');
 
@@ -82,28 +82,7 @@ class RestController extends KumbiaRest {
         }
         header('Access-Control-Allow-Methods: '.implode(',', array_unique($exist_method)));
         $this->setCode(200);
-        die('');
-    }
-
-
-    /**
-     *
-     * Método para equiparar la apache_request_headers
-     *
-     * @return Array
-     *
-     */
-    final function requestHeaders() {
-        $begin = 'HTTP';
-        $headers = array();
-        $clean = array('HTTP_' => '', '_' => ' ');
-        foreach ($_SERVER as $key => $value) {
-            if (strrpos($key, $begin, -strlen($key)) !== FALSE) {
-                $key = strtolower(strtr($key, $clean));
-                $headers[str_replace(' ', '-', ucwords($key))] = $value;
-            }
-        }
-        return $headers;
+        die();
     }
 
 }
