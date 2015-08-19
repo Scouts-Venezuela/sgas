@@ -71,13 +71,17 @@ class RestController extends KumbiaRest {
         $rest_method = array('GET', 'POST', 'PUT', 'DELETE');
         $class_method = get_class_methods($this);
         $exist_method = array();
-        foreach ($class_method as $method) {
-            $method = strtoupper($method);
-            if ($method == 'GETALL'){
-                array_push($exist_method, 'GET');
-            }
-            if ( in_array($method, $rest_method) ){
-                array_push($exist_method, $method);
+        if ($this->publicView) {
+            array_push($exist_method, 'GET');
+        } else {
+            foreach ($class_method as $method) {
+                $method = strtoupper($method);
+                if ($method == 'GETALL'){
+                    array_push($exist_method, 'GET');
+                }
+                if ( in_array($method, $rest_method) ){
+                    array_push($exist_method, $method);
+                }
             }
         }
         header('Access-Control-Allow-Methods: '.implode(',', array_unique($exist_method)));
