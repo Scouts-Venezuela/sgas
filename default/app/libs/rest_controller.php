@@ -15,6 +15,9 @@
 require_once CORE_PATH . 'kumbia/kumbia_rest.php';
 class RestController extends KumbiaRest {
 
+    /** @var boolean Vista del Método GET del controlador es pública */
+    protected $publicView = False;
+
     /**
      * Inicialización de la petición
      * ****************************************
@@ -22,6 +25,7 @@ class RestController extends KumbiaRest {
      * ****************************************
      */
     final protected function initialize() {
+        $router = Router::get();
         // Habilitando CORS para hacer funcional el RESTful
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Credentials: true');
@@ -31,15 +35,12 @@ class RestController extends KumbiaRest {
         $request = array_keys($requestHeaders);
         header("Access-Control-Allow-Headers: ".implode(',', $request).',Authorization');
 
-        $publicView = [
-            'test'
-        ];
-
         // Verificar los accesos y validez de token
-        if($this->control($publicView)){
+        // TODO: Implementar un limit a la consultas de getAll() por seguridad cuando la vista sea pública
+        if (!($this->publicView && ($router['method'] == 'GET' || $router['method'] == 'OPTIONS'))) {
 
             // Precendia del Token
-            if (isset($requestHeaders['Authorization'])) {
+            if (!empty($requestHeaders['Authorization'])) {
                 $token = $requestHeaders['Authorization'];
                 $this->me = JWT::decode(str_replace('Bearer ', '', $token), TOKEN);
                 $now = time();
@@ -62,7 +63,7 @@ class RestController extends KumbiaRest {
 
     /**
      *
-     * Funcion para Atender a todos las solicitudes de seguridad que se hacen con el método options
+     * Método para Atender a todos las solicitudes de seguridad que se hacen con el método options
      * FIXME: con más tiempo hacer una solución contundente para este método
      *
      */
@@ -81,13 +82,13 @@ class RestController extends KumbiaRest {
         }
         header('Access-Control-Allow-Methods: '.implode(',', array_unique($exist_method)));
         $this->setCode(200);
-        die();
+        die('');
     }
 
 
     /**
      *
-     * Método para el equiparar la apache_request_headers
+     * Método para equiparar la apache_request_headers
      *
      * @return Array
      *
@@ -103,25 +104,6 @@ class RestController extends KumbiaRest {
             }
         }
         return $headers;
-    }
-
-    /**
-     *
-     * Método para el manejo de la vistas públicas
-     * TODO: Implimentar un limit a la consultas de getAll() por seguridad
-     *
-     *  @param Array Lista de controladores públicos
-     *  @return Boolean
-     */
-    final function control($publicView){
-        $granted = False;
-        if (!is_array($publicView)) { throw new KumbiaException("Parámetro inesperado, se esperaba un array"); }
-        $router = Router::get();
-        if (in_array($router['controller'], $publicView) && $router['method'] == 'GET') {
-            $granted = True;
-        }
-
-        return !$granted;
     }
 
 }
