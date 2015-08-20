@@ -5,6 +5,8 @@
 */
 class TestController extends RestController
 {
+    protected $publicView = True;
+
     public function getAll(){
         // Token para probar el área con seguridad
         $test = array(

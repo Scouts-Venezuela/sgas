@@ -15,6 +15,9 @@
 require_once CORE_PATH . 'kumbia/kumbia_rest.php';
 class RestController extends KumbiaRest {
 
+    /** @var boolean Vista del Método GET del controlador es pública */
+    protected $publicView = False;
+
     /**
      * Inicialización de la petición
      * ****************************************
@@ -22,24 +25,22 @@ class RestController extends KumbiaRest {
      * ****************************************
      */
     final protected function initialize() {
+        $router = Router::get();
         // Habilitando CORS para hacer funcional el RESTful
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Credentials: true');
 
         // Habilitar todos los headers que recibe (Authorization sobre todo para manejar JWT)
-        $requestHeaders = $this->requestHeaders();
+        $requestHeaders = $this->getHeaders();
         $request = array_keys($requestHeaders);
         header("Access-Control-Allow-Headers: ".implode(',', $request).',Authorization');
 
-        $publicView = [
-            'test'
-        ];
-
         // Verificar los accesos y validez de token
-        if($this->control($publicView)){
+        // TODO: Implementar un limit a la consultas de getAll() por seguridad cuando la vista sea pública
+        if (!($this->publicView && ($router['method'] == 'GET' || $router['method'] == 'OPTIONS'))) {
 
             // Precendia del Token
-            if (isset($requestHeaders['Authorization'])) {
+            if (!empty($requestHeaders['Authorization'])) {
                 $token = $requestHeaders['Authorization'];
                 $this->me = JWT::decode(str_replace('Bearer ', '', $token), TOKEN);
                 $now = time();
@@ -62,7 +63,7 @@ class RestController extends KumbiaRest {
 
     /**
      *
-     * Funcion para Atender a todos las solicitudes de seguridad que se hacen con el método options
+     * Método para Atender a todos las solicitudes de seguridad que se hacen con el método options
      * FIXME: con más tiempo hacer una solución contundente para este método
      *
      */
@@ -70,58 +71,22 @@ class RestController extends KumbiaRest {
         $rest_method = array('GET', 'POST', 'PUT', 'DELETE');
         $class_method = get_class_methods($this);
         $exist_method = array();
-        foreach ($class_method as $method) {
-            $method = strtoupper($method);
-            if ($method == 'GETALL'){
-                array_push($exist_method, 'GET');
-            }
-            if ( in_array($method, $rest_method) ){
-                array_push($exist_method, $method);
+        if ($this->publicView) {
+            array_push($exist_method, 'GET');
+        } else {
+            foreach ($class_method as $method) {
+                $method = strtoupper($method);
+                if ($method == 'GETALL'){
+                    array_push($exist_method, 'GET');
+                }
+                if ( in_array($method, $rest_method) ){
+                    array_push($exist_method, $method);
+                }
             }
         }
         header('Access-Control-Allow-Methods: '.implode(',', array_unique($exist_method)));
         $this->setCode(200);
         die();
-    }
-
-
-    /**
-     *
-     * Método para el equiparar la apache_request_headers
-     *
-     * @return Array
-     *
-     */
-    final function requestHeaders() {
-        $begin = 'HTTP';
-        $headers = array();
-        $clean = array('HTTP_' => '', '_' => ' ');
-        foreach ($_SERVER as $key => $value) {
-            if (strrpos($key, $begin, -strlen($key)) !== FALSE) {
-                $key = strtolower(strtr($key, $clean));
-                $headers[str_replace(' ', '-', ucwords($key))] = $value;
-            }
-        }
-        return $headers;
-    }
-
-    /**
-     *
-     * Método para el manejo de la vistas públicas
-     * TODO: Implimentar un limit a la consultas de getAll() por seguridad
-     *
-     *  @param Array Lista de controladores públicos
-     *  @return Boolean
-     */
-    final function control($publicView){
-        $granted = False;
-        if (!is_array($publicView)) { throw new KumbiaException("Parámetro inesperado, se esperaba un array"); }
-        $router = Router::get();
-        if (in_array($router['controller'], $publicView) && $router['method'] == 'GET') {
-            $granted = True;
-        }
-
-        return !$granted;
     }
 
 }
