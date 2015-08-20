@@ -29,10 +29,13 @@ define('START_TIME', microtime(TRUE));
  */
 
 //*Locale*
-//setlocale(LC_ALL, 'es_ES');
+setlocale(LC_ALL, 'es_ES');
+
+//*GeoNames*
+define ( "COUNTRY_CODE", "VE" );
 
 //*Timezone*
-//ini_set('date.timezone', 'America/New_York');
+ini_set('date.timezone', 'America/Caracas');
 
 /**
  * @TODO

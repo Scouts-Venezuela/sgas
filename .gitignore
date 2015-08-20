@@ -1,6 +1,6 @@
 .DS_Store
-*.project
-*.buildpath
+.project
+.buildpath
 *.sln
 .codeclimate.yml
 /.metadata
