@@ -10,7 +10,7 @@ class stdObject {
 	}
 	public function __call($method, $arguments) {
 		$arguments = array_merge ( array (
-				"stdObject" => $this 
+				"stdObject" => $this
 		), $arguments ); // Note: method argument 0 will always referred to the main class ($this).
 		if (isset ( $this->{$method} ) && is_callable ( $this->{$method} )) {
 			return call_user_func_array ( $this->{$method}, $arguments );
@@ -28,17 +28,17 @@ class stdObject {
  * @date 2015-07-26
  */
 class GeoNames {
-	
+
 	// Function to convert CSV into associative array
 	protected static function csvToArray($data) {
 		$array = array ();
-		
+
 		$lineArray = preg_split ( "/[\r\n]+/", $data );
 		for($j = 0; $j < count ( $lineArray ); $j ++) {
 			$subarray = preg_split ( "/[\t]/", $lineArray [$j] );
-			
+
 			$array [$j] = new stdObject ();
-			
+
 			$array [$j]->geonameid = $subarray [0];
 			$array [$j]->name = $subarray [1];
 			$array [$j]->asciiname = $subarray [2];
@@ -59,29 +59,30 @@ class GeoNames {
 			$array [$j]->timezone = $subarray [17];
 			$array [$j]->modification = $subarray [18];
 		}
-		
+
 		return $array;
 	}
-	public static function getGeoNames($file = COUNTRY_CODE.'.txt') {
-		$searchfor = $_GET ['s'];
-		
+	public static function getGeoNames($file = COUNTRY_CODE) {
+		$file = $file.'.txt';
+		$searchfor = @$_GET ['s'];
+
 		//header ( 'Content-Type: text/plain; charset='.APP_CHARSET );
-		
+
 		$array = null;
-		
+
 		if (! is_null ( $searchfor )) {
-			
-			$contents = file_get_contents ( __DIR__ . '\\GeoNames\\' . $file );
-			
+
+			$contents = file_get_contents ( __DIR__ . DIRECTORY_SEPARATOR . 'GeoNames' . DIRECTORY_SEPARATOR . $file );
+
 			$pattern = preg_quote ( $searchfor, '/' );
 			$pattern = "/^.*$pattern.*\$/m";
-			
+
 			if (preg_match_all ( $pattern, $contents, $matches )) {
 				$data = implode ( "\n", $matches [0] );
 				$array = GeoNames::csvToArray ( $data );
 			}
 		}
-		
+
 		if (isset ( $_GET ["fc"] )) {
 			$result = array_filter ( $array, function ($k) {
 				return ($k->feature_code == $_GET ["fc"]);
@@ -97,7 +98,7 @@ class GeoNames {
 		} else {
 			$result = $array;
 		}
-		
+
 		if (sizeof ( $result ) > 0) {
 			//header ( 'Content-Type: application/json; charset=' . APP_CHARSET );
 			//echo json_encode ( $result );
