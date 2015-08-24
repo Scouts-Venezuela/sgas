@@ -1,6 +1,5 @@
 <?php
-
-class stdObject {
+class geoname {
 	public function __construct(array $arguments = array()) {
 		if (! empty ( $arguments )) {
 			foreach ( $arguments as $property => $argument ) {
@@ -10,7 +9,7 @@ class stdObject {
 	}
 	public function __call($method, $arguments) {
 		$arguments = array_merge ( array (
-				"stdObject" => $this
+				"stdObject" => $this 
 		), $arguments ); // Note: method argument 0 will always referred to the main class ($this).
 		if (isset ( $this->{$method} ) && is_callable ( $this->{$method} )) {
 			return call_user_func_array ( $this->{$method}, $arguments );
@@ -28,17 +27,17 @@ class stdObject {
  * @date 2015-07-26
  */
 class GeoNames {
-
+	
 	// Function to convert CSV into associative array
-	protected static function csvToArray($data) {
+	private static function csvToArray($data) {
 		$array = array ();
-
+		
 		$lineArray = preg_split ( "/[\r\n]+/", $data );
 		for($j = 0; $j < count ( $lineArray ); $j ++) {
 			$subarray = preg_split ( "/[\t]/", $lineArray [$j] );
-
-			$array [$j] = new stdObject ();
-
+			
+			$array [$j] = new geoname ();
+			
 			$array [$j]->geonameid = $subarray [0];
 			$array [$j]->name = $subarray [1];
 			$array [$j]->asciiname = $subarray [2];
@@ -59,51 +58,56 @@ class GeoNames {
 			$array [$j]->timezone = $subarray [17];
 			$array [$j]->modification = $subarray [18];
 		}
-
+		
 		return $array;
 	}
-	public static function getGeoNames($file = COUNTRY_CODE) {
-		$file = $file.'.txt';
-		$searchfor = @$_GET ['s'];
-
-		//header ( 'Content-Type: text/plain; charset='.APP_CHARSET );
-
+	public static function SearchFor($criteria, $file = COUNTRY_CODE) {
+		$file = $file . '.txt';
 		$array = null;
-
-		if (! is_null ( $searchfor )) {
-
+		
+		if (! is_null ( $criteria )) {
+			
 			$contents = file_get_contents ( __DIR__ . DIRECTORY_SEPARATOR . 'GeoNames' . DIRECTORY_SEPARATOR . $file );
-
-			$pattern = preg_quote ( $searchfor, '/' );
+			
+			$pattern = preg_quote ( $criteria, '/' );
 			$pattern = "/^.*$pattern.*\$/m";
-
+			
 			if (preg_match_all ( $pattern, $contents, $matches )) {
 				$data = implode ( "\n", $matches [0] );
 				$array = GeoNames::csvToArray ( $data );
 			}
 		}
-
-		if (isset ( $_GET ["fc"] )) {
-			$result = array_filter ( $array, function ($k) {
-				return ($k->feature_code == $_GET ["fc"]);
-			} );
-		} elseif (isset ( $_GET ["a1"] )) {
-			$result = array_filter ( $array, function ($k) {
-				return ($k->admin1 == $_GET ["a1"]);
-			} );
-		} elseif (isset ( $_GET ["a2"] )) {
-			$result = array_filter ( $array, function ($k) {
-				return ($k->admin2 == $_GET ["a2"]);
-			} );
-		} else {
-			$result = $array;
+		
+		if (sizeof ( $array ) > 0) {
+			return $array;
 		}
-
+	}
+	public static function GetGeoNames($file = COUNTRY_CODE) {
+		$criteria = $_GET ['q'];
+		$array = GeoNames::getGeoNames ( $criteria, $file );
+		
 		if (sizeof ( $result ) > 0) {
-			//header ( 'Content-Type: application/json; charset=' . APP_CHARSET );
-			//echo json_encode ( $result );
+			if (isset ( $_GET ["fc"] )) {
+				$result = array_filter ( $array, function ($k) {
+					return ($k->feature_code == $_GET ["fc"]);
+				} );
+			} elseif (isset ( $_GET ["a1"] )) {
+				$result = array_filter ( $array, function ($k) {
+					return ($k->admin1 == $_GET ["a1"]);
+				} );
+			} elseif (isset ( $_GET ["a2"] )) {
+				$result = array_filter ( $array, function ($k) {
+					return ($k->admin2 == $_GET ["a2"]);
+				} );
+			} elseif (isset ( $_GET ["a3"] )) {
+				$result = array_filter ( $array, function ($k) {
+					return ($k->admin3 == $_GET ["a3"]);
+				} );
+			} else {
+				$result = $array;
+			}
+			
 			return $result;
 		}
 	}
-
 }
