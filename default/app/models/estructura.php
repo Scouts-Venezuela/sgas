@@ -7,7 +7,7 @@ class Estructura extends ActiveRecord {
 		return $this->find ( $this->columns, $this->conditions );
 	}
 	public function fillby($id) {
-		return $this->find_first ( $id );
+		return $this->find_first ( $this->columns,  $id );
 	}
 	public function fillbyowner($id) {
 		return null;
