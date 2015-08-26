@@ -123,7 +123,7 @@ class Util
         return '"' . implode('","', $items) . '"';
     }
 
-    function array_interlace() {
+    public static function array_interlace() {
         $args = func_get_args();
         $total = count($args);
 
