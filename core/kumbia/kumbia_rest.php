@@ -110,7 +110,7 @@ class KumbiaRest extends Controller {
 			$this->action_name = 'getAll';
 		} else {
 			$this->action_name = $method;
-			$this->parameters = ($action == 'index') ? $this->parameters : array($action) + $this->parameters;
+			$this->parameters = ($action == 'index') ? $this->parameters : array_merge(array($action), $this->parameters);
 		}
 	}
 
