@@ -5,10 +5,10 @@ class EstructurasController extends RestController {
 		$this->data = Load::model ( "region" )->fill ();
 	}
 	public function get($model, $id = null, $parentid = null) {
-		if (!empty($id)) {
-			$this->data = Load::model ( $model )->fillby ($id);
-		} elseif (!empty($parentid)) {
-			$this->data = Load::model ( $model )->fillbyowner ($parentid);
+		if ($id == 'parent') {
+			$this->data = Load::model ( $model )->fillbyowner ( $parentid );
+		} elseif (! empty ( $id )) {
+			$this->data = Load::model ( $model )->fillby ( $id );
 		} else {
 			$this->data = Load::model ( $model )->fill ();
 		}
