@@ -5,10 +5,10 @@
  */
 class GeonamesController extends RestController {
 	protected $publicView = true;
-	public function getAll() {
-		$this->data = GeoNames::GetGeoNames ();
-	}
-	public function get($id) {
-		$this->data = GeoNames::SearchFor ( $id );
+// 	public function getAll() {
+// 		$this->data = GeoNames::GetGeoNames ();
+// 	}
+	public function get($criteria, $id = NULL) {
+		$this->data = GeoNames::SearchFor ( $criteria, $id);
 	}
 }
