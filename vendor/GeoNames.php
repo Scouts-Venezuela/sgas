@@ -23,8 +23,8 @@ class geoname {
  * GeoNames Helper - collection of methods for working with GeoNames
  *
  * @author Enner Pérez - ennerperez@gmail.com
- * @version 1.0
- * @date 2015-07-26
+ * @version 1.2
+ * @date 2015-08-27
  */
 class GeoNames {
 	
@@ -61,11 +61,15 @@ class GeoNames {
 		
 		return $array;
 	}
-	public static function SearchFor($criteria, $file = COUNTRY_CODE) {
-		$file = $file . '.txt';
+	private static $ID_ARRAY_FILTER = null;
+	public static function SearchFor($criteria, $id = NULL) {
+		$file = COUNTRY_CODE . '.txt';
 		$array = null;
+		$result = null;
 		
-		if (! is_null ( $criteria )) {
+		GeoNames::$ID_ARRAY_FILTER = $id;
+		
+		if (! empty ( $criteria )) {
 			
 			$contents = file_get_contents ( __DIR__ . DIRECTORY_SEPARATOR . 'GeoNames' . DIRECTORY_SEPARATOR . $file );
 			
@@ -78,35 +82,29 @@ class GeoNames {
 			}
 		}
 		
-		if (sizeof ( $array ) > 0) {
-			return $array;
+		if (! is_null ( $id )) {
+			switch ($criteria) {
+				case "ADM2" :
+					$result = array_filter ( $array, function ($k) {
+						return ($k->admin1 == GeoNames::$ID_ARRAY_FILTER);
+					} );
+					break;
+				case "ADM3" :
+					$result = array_filter ( $array, function ($k) {
+						return ($k->admin2 == GeoNames::$ID_ARRAY_FILTER);
+					} );
+					break;
+				default :
+					$result = array_filter ( $array, function ($k) {
+						return ($k->geonameid == GeoNames::$ID_ARRAY_FILTER);
+					} );
+					break;
+			}
+		} else {
+			$result = $array;
 		}
-	}
-	public static function GetGeoNames($file = COUNTRY_CODE) {
-		$criteria = $_GET ['q'];
-		$array = GeoNames::getGeoNames ( $criteria, $file );
 		
 		if (sizeof ( $result ) > 0) {
-			if (isset ( $_GET ["fc"] )) {
-				$result = array_filter ( $array, function ($k) {
-					return ($k->feature_code == $_GET ["fc"]);
-				} );
-			} elseif (isset ( $_GET ["a1"] )) {
-				$result = array_filter ( $array, function ($k) {
-					return ($k->admin1 == $_GET ["a1"]);
-				} );
-			} elseif (isset ( $_GET ["a2"] )) {
-				$result = array_filter ( $array, function ($k) {
-					return ($k->admin2 == $_GET ["a2"]);
-				} );
-			} elseif (isset ( $_GET ["a3"] )) {
-				$result = array_filter ( $array, function ($k) {
-					return ($k->admin3 == $_GET ["a3"]);
-				} );
-			} else {
-				$result = $array;
-			}
-			
 			return $result;
 		}
 	}
